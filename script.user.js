@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Circles model picker
-// @version      1.0.0
+// @version      1.0.1
 // @match        https://aistore.circles.life/*
 // @grant        none
 // ==/UserScript==
@@ -72,7 +72,7 @@
     function mount() {
         if (document.getElementById(KEY) || !document.body) return;
         const box = document.createElement("div");
-        box.style.cssText = "position:fixed;top:12px;right:12px;z-index:2147483647;padding:8px 10px;background:#fff;border:1px solid #ccc;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15)";
+        box.style.cssText = "position:fixed;top:56px;right:12px;z-index:2147483647;padding:8px 10px;background:#fff;border:1px solid #ccc;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15)";
         box.innerHTML = HTML;
         const sel = box.querySelector("#circles_model_id");
         sel.value = model();
