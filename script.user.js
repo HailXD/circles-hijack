@@ -1,12 +1,15 @@
 // ==UserScript==
 // @name         Circles model picker
-// @version      1.0.1
+// @version      1.0.2
 // @match        https://aistore.circles.life/*
 // @grant        none
 // ==/UserScript==
 
 (function () {
     const KEY = "circles_model_id";
+    const CUSTOM_KEY = "circles_custom_model_id";
+    const CUSTOM = "__custom__";
+    const DEFAULT = "gpt-5.4";
     const URL = "https://aistore-api.circles.life/v1/sgcircles/aistore/chatbot/completions";
     const HTML = `<div class="flex-container">
                                 <select id="circles_model_id" class="text_pole wide100p">
@@ -50,11 +53,21 @@
                                     <optgroup label="Perplexity">
                                         <option value="sonar-pro">Perplexity Sonar Pro</option>
                                     </optgroup>
+                                    <optgroup label="Custom">
+                                        <option value="__custom__">Custom</option>
+                                    </optgroup>
                                 </select>
+                                <input id="circles_custom_model_id" class="text_pole wide100p" type="text" placeholder="Custom model id" style="display:none;margin-top:8px" />
                             </div>`;
 
+    function stored() {
+        return localStorage.getItem(KEY) || DEFAULT;
+    }
+
     function model() {
-        return localStorage.getItem(KEY) || "gpt-5.4";
+        const id = stored();
+        if (id !== CUSTOM) return id;
+        return localStorage.getItem(CUSTOM_KEY)?.trim() || DEFAULT;
     }
 
     function rewrite(body) {
@@ -69,14 +82,27 @@
         }
     }
 
+    function sync(sel, input) {
+        input.style.display = sel.value === CUSTOM ? "block" : "none";
+    }
+
     function mount() {
         if (document.getElementById(KEY) || !document.body) return;
         const box = document.createElement("div");
         box.style.cssText = "position:fixed;top:56px;right:12px;z-index:2147483647;padding:8px 10px;background:#fff;border:1px solid #ccc;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15)";
         box.innerHTML = HTML;
         const sel = box.querySelector("#circles_model_id");
-        sel.value = model();
-        sel.addEventListener("change", () => localStorage.setItem(KEY, sel.value));
+        const input = box.querySelector("#circles_custom_model_id");
+        const id = stored();
+        const custom = localStorage.getItem(CUSTOM_KEY) || "";
+        sel.value = box.querySelector(`option[value="${id}"]`) ? id : CUSTOM;
+        input.value = sel.value === CUSTOM && id !== CUSTOM ? id : custom;
+        sync(sel, input);
+        sel.addEventListener("change", () => {
+            localStorage.setItem(KEY, sel.value);
+            sync(sel, input);
+        });
+        input.addEventListener("input", () => localStorage.setItem(CUSTOM_KEY, input.value.trim()));
         document.body.appendChild(box);
     }
 
